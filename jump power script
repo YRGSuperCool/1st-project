@@ -1,0 +1,126 @@
+-- Creating the UI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = game.Players.LocalPlayer.PlayerGui
+
+local Frame = Instance.new("Frame")
+Frame.Size = UDim2.new(0, 400, 0, 200)  -- Increased size
+Frame.Position = UDim2.new(0, 10, 0, 10)
+Frame.BackgroundColor3 = Color3.new(0, 0, 0)  -- Changed to black
+Frame.BorderSizePixel = 2
+Frame.Parent = ScreenGui
+
+local SliderLabel = Instance.new("TextLabel")
+SliderLabel.Text = "Jump Power:"
+SliderLabel.Size = UDim2.new(0, 100, 0, 30)  -- Adjusted size
+SliderLabel.Position = UDim2.new(0, 10, 0, 10)
+SliderLabel.FontSize = Enum.FontSize.Size14  -- Smaller font
+SliderLabel.TextColor3 = Color3.new(1, 0, 0)  -- Changed to red
+SliderLabel.TextScaled = true
+SliderLabel.Parent = Frame
+
+local JumpValue = Instance.new("TextLabel")
+JumpValue.Size = UDim2.new(0, 100, 0, 30)  -- Adjusted size
+JumpValue.Position = UDim2.new(1, -110, 0, 10)
+JumpValue.FontSize = Enum.FontSize.Size14  -- Smaller font
+JumpValue.TextColor3 = Color3.new(1, 0, 0)  -- Changed to red
+JumpValue.TextScaled = true
+JumpValue.Parent = Frame
+
+local Slider = Instance.new("TextBox")  -- Using TextBox as a workaround for Slider
+Slider.Size = UDim2.new(0, 50, 0, 20)  -- Adjusted size
+Slider.Position = UDim2.new(0, 120, 0, 10)
+Slider.Parent = Frame
+Slider.Text = "50"  -- Default value
+Slider.TextScaled = true
+
+local JumpButton = Instance.new("TextButton")  -- Adding a Jump button
+JumpButton.Text = "Jump"
+JumpButton.Size = UDim2.new(0, 50, 0, 20)  -- Adjusted size
+JumpButton.Position = UDim2.new(0, 120, 0, 40)  -- Adjusted position
+JumpButton.Parent = Frame
+JumpButton.MouseButton1Click:Connect(function()
+    game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass('Humanoid'):ChangeState("Jumping")
+end)
+
+local CloseButton = Instance.new("TextButton")
+CloseButton.Text = "X"
+CloseButton.Size = UDim2.new(0, 20, 0, 20)
+CloseButton.Position = UDim2.new(1, -25, 0, 5)
+CloseButton.Parent = Frame
+CloseButton.MouseButton1Click:Connect(function()
+    Frame.Visible = false
+end)
+
+-- Function to adjust jump power based on slider value
+local function adjustJumpPower()
+    local jumpPower = tonumber(Slider.Text)
+    JumpValue.Text = "Jump Power: " .. tostring(jumpPower)
+    game:GetService("Players").LocalPlayer.Character.Humanoid.JumpPower = jumpPower
+end
+
+Slider.FocusLost:Connect(adjustJumpPower)
+
+-- Making the UI movable
+local UIS = game:GetService("UserInputService")
+local dragging
+local dragInput
+local dragStart
+local startPos
+
+local function updateInput(input)
+    local delta = input.Position - dragStart
+    Frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+end
+
+Frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = Frame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+Frame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        updateInput(input)
+    end
+end)
+
+-- Function to handle jump requests
+local jumped = false  -- Flag to track if the character has already jumped
+
+game:GetService("UserInputService").JumpRequest:Connect(function()
+    if not jumped then
+        local jumpPower = tonumber(Slider.Text)
+        game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass('Humanoid'):ChangeState("Jumping")
+        game:GetService("Players").LocalPlayer.Character.Humanoid.JumpPower = jumpPower
+        jumped = true
+    end
+end)
+
+-- Reset jumped flag when the character lands
+game:GetService("Players").LocalPlayer.Character.Humanoid.FreeFalling:Connect(function()
+    jumped = false
+end)
+
+-- Adding YRG at the bottom
+local YRGLabel = Instance.new("TextLabel")
+YRGLabel.Text = "Made by YRG"
+YRGLabel.Size = UDim2.new(0, 100, 0, 20)
+YRGLabel.Position = UDim2.new(1, -110, 1, -30)
+YRGLabel.FontSize = Enum.FontSize.Size14  -- Smaller font
+YRGLabel.TextColor3 = Color3.new(1, 0, 0)  -- Changed to red
+YRGLabel.TextScaled = true
+YRGLabel.Parent = Frame
